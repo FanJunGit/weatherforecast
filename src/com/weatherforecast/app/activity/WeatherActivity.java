@@ -2,6 +2,7 @@ package com.weatherforecast.app.activity;
 
 import com.example.weatherforecast.ChooseAreaActivity;
 import com.example.weatherforecast.R;
+import com.weatherforecast.app.service.AutoUpdateService;
 import com.weatherforecast.app.util.HttpCallbackListener;
 import com.weatherforecast.app.util.HttpUtil;
 import com.weatherforecast.app.util.Utility;
@@ -12,12 +13,14 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class WeatherActivity extends Activity implements OnClickListener{
 	private LinearLayout weatherInfoLayout;
@@ -158,12 +161,14 @@ public class WeatherActivity extends Activity implements OnClickListener{
 			}
 			
 			@Override
-			public void onError(Exception e) {
+			public void onError(final Exception e) {
+				Log.e("更新天气失败--->", e.toString());
 				runOnUiThread(new Runnable() {
 					
 					@Override
 					public void run() {
 						publishText.setText("同步失败！");
+						Toast.makeText(WeatherActivity.this, "更新失败："+e.toString(), Toast.LENGTH_SHORT).show();
 					}
 				});
 			}
@@ -183,5 +188,7 @@ public class WeatherActivity extends Activity implements OnClickListener{
 		currentDateText.setText(preferences.getString("current_date", ""));
 		weatherInfoLayout.setVisibility(View.VISIBLE);
 		cityNameText.setVisibility(View.VISIBLE);
+		Intent intent=new Intent(this,AutoUpdateService.class);
+		startService(intent);
 	}
 }
