@@ -1,5 +1,10 @@
 package com.weatherforecast.app.activity;
 
+import net.youmi.android.AdManager;
+import net.youmi.android.banner.AdSize;
+import net.youmi.android.banner.AdView;
+import net.youmi.android.banner.AdViewListener;
+
 import com.example.weatherforecast.ChooseAreaActivity;
 import com.example.weatherforecast.R;
 import com.weatherforecast.app.service.AutoUpdateService;
@@ -8,16 +13,19 @@ import com.weatherforecast.app.util.HttpUtil;
 import com.weatherforecast.app.util.Utility;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -57,12 +65,21 @@ public class WeatherActivity extends Activity implements OnClickListener{
 	 */
 	private Button refreshWeather;
 	
+	private Context context;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.weather_layout);
+		
+		//有米广告
+		context = this;
+		// 初始化接口，应用启动的时候调用
+		// 参数：appId, appSecret, 调试模式
+		AdManager.getInstance(context).init("aadc57227e7b8a4b", "585c9a4bc87e7ee4");
+		
 		initView();
 		String countyCode=getIntent().getStringExtra("county_code");
 		if(!TextUtils.isEmpty(countyCode)){
@@ -77,6 +94,7 @@ public class WeatherActivity extends Activity implements OnClickListener{
 		}
 		switchCity.setOnClickListener(this);
 		refreshWeather.setOnClickListener(this);
+		showBanner();
 	}
 	
 	private void initView(){
@@ -190,5 +208,46 @@ public class WeatherActivity extends Activity implements OnClickListener{
 		cityNameText.setVisibility(View.VISIBLE);
 		Intent intent=new Intent(this,AutoUpdateService.class);
 		startService(intent);
+	}
+	
+	private void showBanner() {
+
+		// 广告条接口调用（适用于应用）
+		// 将广告条adView添加到需要展示的layout控件中
+		// LinearLayout adLayout = (LinearLayout) findViewById(R.id.adLayout);
+		// AdView adView = new AdView(context, AdSize.FIT_SCREEN);
+		// adLayout.addView(adView);
+
+		// 广告条接口调用（适用于游戏）
+
+		// 实例化LayoutParams(重要)
+		FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
+				FrameLayout.LayoutParams.WRAP_CONTENT);
+		// 设置广告条的悬浮位置
+		layoutParams.gravity = Gravity.BOTTOM | Gravity.RIGHT; // 这里示例为右下角
+		// 实例化广告条
+		AdView adView = new AdView(context, AdSize.FIT_SCREEN);
+		// 调用Activity的addContentView函数
+
+		// 监听广告条接口
+		adView.setAdListener(new AdViewListener() {
+
+			@Override
+			public void onSwitchedAd(AdView arg0) {
+				Log.i("YoumiAdDemo", "广告条切换");
+			}
+
+			@Override
+			public void onReceivedAd(AdView arg0) {
+				Log.i("YoumiAdDemo", "请求广告成功");
+
+			}
+
+			@Override
+			public void onFailedToReceivedAd(AdView arg0) {
+				Log.i("YoumiAdDemo", "请求广告失败");
+			}
+		});
+		((Activity) context).addContentView(adView, layoutParams);
 	}
 }

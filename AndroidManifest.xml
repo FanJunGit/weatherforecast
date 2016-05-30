@@ -3,7 +3,15 @@
     package="com.example.weatherforecast"
     android:versionCode="1"
     android:versionName="1.0" >
-	<uses-permission android:name="android.permission.INTERNET"/>
+	<!-- 配置权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
+    <uses-permission android:name="android.permission.CHANGE_CONFIGURATION" />
     <uses-sdk
         android:minSdkVersion="14"
         android:targetSdkVersion="19" />
@@ -14,7 +22,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.example.weatherforecast.ChooseAreaActivity"
+            android:name="com.weatherforecast.app.ad.SplashSpotActivity"
             android:label="@string/app_name" >
             <intent-filter >
                 <action android:name="android.intent.action.MAIN"/>
@@ -22,11 +30,31 @@
           	</intent-filter>
         </activity>
         
+        <activity android:name="com.example.weatherforecast.ChooseAreaActivity"></activity>
+        
         <activity android:name="com.weatherforecast.app.activity.WeatherActivity"></activity>
         
         <service android:name="com.weatherforecast.app.service.AutoUpdateService"></service>
         
         <receiver android:name="com.weatherforecast.app.receiver.AutoUpdateReceiver"></receiver>
+        
+        <!-- 添加必须的组件 -->
+        <service android:name="net.youmi.android.AdService" >
+        </service>
+
+        <activity
+            android:name="net.youmi.android.AdBrowser"
+            android:theme="@android:style/Theme.NoTitleBar" >
+        </activity>
+
+        <receiver android:name="net.youmi.android.AdReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_INSTALL" />
+
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

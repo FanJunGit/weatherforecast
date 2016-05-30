@@ -3,6 +3,15 @@ package com.example.weatherforecast;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.youmi.android.AdManager;
+import net.youmi.android.spot.SpotDialogListener;
+import net.youmi.android.spot.SpotManager;
+import net.youmi.android.video.VideoAdManager;
+import net.youmi.android.video.listener.VideoAdListener;
+import net.youmi.android.video.listener.VideoAdRequestListener;
+import net.youmi.android.video.listener.VideoApkDownloadListener;
+import net.youmi.android.video.model.VideoInfoModel;
+
 import com.weatherforecast.app.activity.WeatherActivity;
 import com.weatherforecast.app.model.City;
 import com.weatherforecast.app.model.County;
@@ -16,20 +25,30 @@ import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.os.Build;
@@ -75,10 +94,17 @@ public class ChooseAreaActivity extends Activity {
 	 */
 	private boolean isFromWeatherActivity;
 	
+	private Context context;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+		super.onCreate(savedInstanceState);		
+		//有米广告
+		context = this;
+		// 初始化接口，应用启动的时候调用
+		// 参数：appId, appSecret, 调试模式
+		AdManager.getInstance(context).init("aadc57227e7b8a4b", "585c9a4bc87e7ee4");
+		
 		isFromWeatherActivity=getIntent().getBooleanExtra("from_weather_activity", false);
 		SharedPreferences preferences=PreferenceManager.getDefaultSharedPreferences(this);
 		//已经选择了城市且不是从WeatherActivity跳转过来的，才会直接跳转到WeatherActivity
@@ -115,6 +141,7 @@ public class ChooseAreaActivity extends Activity {
 			}
 		});
 		queryProvinces();//加载省级数据
+		setSpotAd();
 	}
 
 	/**
@@ -269,4 +296,39 @@ public class ChooseAreaActivity extends Activity {
 			finish();
 		}
 	}
+	
+	private void setSpotAd() {
+		// 插播接口调用
+		// 开发者可以到开发者后台设置展示频率，需要到开发者后台设置页面（详细信息->业务信息->无积分广告业务->高级设置）
+		// 自4.03版本增加云控制是否开启防误点功能，需要到开发者后台设置页面（详细信息->业务信息->无积分广告业务->高级设置）
+
+		// 加载插播资源
+		SpotManager.getInstance(context).loadSpotAds();
+		// 插屏出现动画效果，0:ANIM_NONE为无动画，1:ANIM_SIMPLE为简单动画效果，2:ANIM_ADVANCE为高级动画效果
+		SpotManager.getInstance(context).setAnimationType(
+				SpotManager.ANIM_ADVANCE);
+		// 设置插屏动画的横竖屏展示方式，如果设置了横屏，则在有广告资源的情况下会是优先使用横屏图。
+		SpotManager.getInstance(context).setSpotOrientation(
+				SpotManager.ORIENTATION_PORTRAIT);
+		// 展示插播广告，可以不调用loadSpot独立使用
+		SpotManager.getInstance(context).showSpotAds(context,
+				new SpotDialogListener() {
+					@Override
+					public void onShowSuccess() {
+						Log.i("YoumiAdDemo", "展示成功");
+					}
+
+					@Override
+					public void onShowFailed() {
+						Log.i("YoumiAdDemo", "展示失败");
+					}
+
+					@Override
+					public void onSpotClosed() {
+						Log.i("YoumiAdDemo", "展示关闭");
+					}
+
+				});
+	}
+	
 }

@@ -8,7 +8,7 @@ import java.net.URL;
 
 
 public class HttpUtil {
-	
+	private static final int BUFFER_SIZE=1024*1024;
 	public static void sendHttpRequest(final String address,
 			final HttpCallbackListener listener){
 		new Thread(new Runnable() {
@@ -22,16 +22,19 @@ public class HttpUtil {
 					connection.setRequestMethod("GET");
 					connection.setConnectTimeout(8000);
 					connection.setReadTimeout(8000);
+					char[] data = new char[BUFFER_SIZE];
 					InputStream in=connection.getInputStream();
 					BufferedReader reader=new BufferedReader(new InputStreamReader(in));
-					StringBuilder response=new StringBuilder();
+					String response;
 					String line;
-					while ((line=reader.readLine())!=null) {
-						response.append(line);
-					}
+					int len = reader.read(data); 
+//					while ((line=reader.readLine())!=null) {
+//						response.append(line);
+//					}
+					response=String.valueOf(data, 0, len);
 					if(listener!=null){
 						//回调onFinish()方法
-						listener.onFinish(response.toString());
+						listener.onFinish(response);
 					}
 				} catch (Exception e) {
 					if(listener!=null){
